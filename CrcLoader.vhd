@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------
+-- CrcLoader.vhd
+--
+-- Author: Andrew Fitzsimons
+-- 2014
+--
+-- Largest amount of data held by UDP payload is defined by the generic
+--   UDP_PAYLOAD_SIZE
+--
+-- This hardware instance clocks data into CRCGenerator.vhd. 
+---------------------------------------------------------------------------------
 library IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;

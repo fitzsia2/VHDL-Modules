@@ -24,7 +24,7 @@ end CRC_Ctrl;
 ---------------------------------------------------------------------------------
 architecture Structure of CRC_Ctrl is
 
-	COMPONENT Counter
+   COMPONENT Counter
    GENERIC(
       COUNTMAX : INTEGER
       );
