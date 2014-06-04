@@ -4,15 +4,15 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 ---------------------------------------------------------------------------------
 entity DataFF is
 port(
-    CLK : in std_logic;
-    SRST : in std_logic;
-    SET : in std_logic;
-    Q : out std_logic;
-    Q_NOT : out std_logic;
+    CLK_in : in std_logic;
+    DATA_in : in std_logic;
+    n_SRST_in : in std_logic;
+    Q_out : out std_logic;
+    n_Q_out : out std_logic
 );
 end DataFF;
 
@@ -20,26 +20,29 @@ end DataFF;
 -- Internal signal description
 -----------------------------------------
 architecture Behavioral of DataFF is
+   signal SRst_i : std_logic := '0';
 
 -----------------------------------------
 begin
+   Srst_i <= not n_SRST_in;
+   
 -----------------------------------------
 -- Logic
 -----------------------------------------
-process( CLK, SRST )
+process( CLK_IN, n_SRST_in )
 begin
-    if( CLK'event && CLK = '1' ) then
-        if( SRST = '1' ) then
+    if( CLK_IN'event and CLK_IN = '1' ) then
+        if( SRst_i = '0' ) then
             Q <= '0';
-            Q_NOT <= '1';
+            n_Q <= '1';
         else
-            Q <= '1';
-            Q_NOT <= '0';
+            Q <= DATA_in;
+            n_Q <= not DATA_in;
         end if;
     else
         null;
     end if;
-end process
+end process;
 --------------------------------------------------------------------------------
 end Behavioral;
 

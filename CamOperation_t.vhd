@@ -1,4 +1,6 @@
 ---------------------------------------------------------------------------------
+-- CamOperation_t.vhd
+--
 -- Module Is Currently Configured for RGB444
 --    D0[7:4] - 'X'
 --      [3:0] - 'R'
@@ -16,23 +18,24 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 ---------------------------------------------------------------------------------
 entity CamOperation is
 	port(
-	  CLK_IN    : in  STD_LOGIC;
-     CE        : in STD_LOGIC;
-     D_BUG     : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
-   --CAMERA PORTS
-     VSYNC     :in STD_LOGIC;
-     HREF      :in STD_LOGIC;
-     PCLK      :in STD_LOGIC;
-     DATA      :in STD_LOGIC_VECTOR(7 downto 0);
-     XCLK      :out STD_LOGIC := '0';
-     ARST_L    :out STD_LOGIC := '1';
-     PWDN      :out STD_LOGIC := '0';
-	  CLK_OUT	:out STD_LOGIC := '0';
-	  D0        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-	  D1        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-	  D2        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-	  D3        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
-     CAM_EN    :in STD_LOGIC);
+    CLK_IN    : in  STD_LOGIC;
+    CE        : in STD_LOGIC;
+    D_BUG     : out STD_LOGIC_VECTOR(3 downto 0) := (others => '0');
+    --CAMERA PORTS
+    VSYNC     :in STD_LOGIC;
+    HREF      :in STD_LOGIC;
+    PCLK      :in STD_LOGIC;
+    DATA      :in STD_LOGIC_VECTOR(7 downto 0);
+    XCLK      :out STD_LOGIC := '0';
+    ARST_L    :out STD_LOGIC := '1';
+    PWDN      :out STD_LOGIC := '0';
+    CLK_OUT	:out STD_LOGIC := '0';
+    D0        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+    D1        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+    D2        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+    D3        :out STD_LOGIC_VECTOR(7 downto 0) := (others => '0');
+    CAM_EN    :in STD_LOGIC
+    );
       
 end CamOperation;
 ---------------------------------------------------------------------------------

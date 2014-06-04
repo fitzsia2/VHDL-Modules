@@ -1,28 +1,38 @@
 ---------------------------------------------------------------------------------
--- 
+-- CamInit.vhd
+--
+-- Initializes an OV7670 for RGB444 data output
+--    D0[7:4] - 'X'
+--      [3:0] - 'R'
+--    D1[7:4] - 'G'
+--      [3:0] - 'B'
+--    D2[7:4] - 'X'
+--      [3:0] - 'R'
+--    D3[7:4] - 'G'
+--      [3:0] - 'B'
 ---------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 ---------------------------------------------------------------------------------
 -- Port Declarations
 ---------------------------------------------------------------------------------
 entity CamInit is
    port( 
-      CLK_IN : in STD_LOGIC;
-      CE : in STD_LOGIC;
-      SIOC : out STD_LOGIC;
-      SIOD : out STD_LOGIC;
-      CE_OUT : out STD_LOGIC := '0';
-      D_BUG : out STD_LOGIC_VECTOR(3 downto 0)
+      CLK_IN : in std_logic;
+      CE : in std_logic;
+      SIOC : out std_logic;
+      SIOD : out std_logic;
+      DONE_o : out std_logic := '0';
+      D_BUG : out std_logic_vector(3 downto 0)
       );
 end CamInit;
 ---------------------------------------------------------------------------------
 -- Internal Signal Declarations
 ---------------------------------------------------------------------------------
 architecture Behavioral of CamInit is
-   signal Clk_200K : STD_LOGIC := '0';
+   signal Clk_200K : std_logic := '0';
 
 ---------------------------------------------------------------------------------
 -- Signal Assignments
@@ -38,8 +48,8 @@ begin
 -- Process Descriptions
 ---------------------------------------------------------------------------------
 process(CLK_IN)
-CONSTANT END_OF_COUNT : STD_LOGIC_VECTOR(7 downto 0) := X"7D";
-variable cnt : STD_LOGIC_VECTOR(7 downto 0) := X"00";
+CONSTANT END_OF_COUNT : std_logic_vector(7 downto 0) := X"7D";
+variable cnt : std_logic_vector(7 downto 0) := X"00";
 begin
    if(CLK_IN'event and CLK_IN = '1') then
       if(cnt = END_OF_COUNT) then
@@ -56,16 +66,16 @@ end process;
 -- Process Descriptions
 ---------------------------------------------------------------------------------
 process(Clk_200K)
-CONSTANT OV7670_ADDR : STD_LOGIC_VECTOR(6 downto 0) := "1000011";
-CONSTANT OV7670_WRITE : STD_LOGIC := '0';
-CONSTANT OV7670_DONTCARE : STD_LOGIC := '1';
-CONSTANT OV7670_REGADDRCOM7 : STD_LOGIC_VECTOR(7 downto 0) := X"12";
-CONSTANT OV7670_COM7DATA : STD_LOGIC_VECTOR(7 downto 0) := "00000100"; -- Enable Raw RGB Output
-CONSTANT OV7670_REGADDRCOM15 : STD_LOGIC_VECTOR(7 downto 0) := X"40";
-CONSTANT OV7670_COM15DATA : STD_LOGIC_VECTOR(7 downto 0) := "00010000";
-CONSTANT OV7670_REGADDRRGB444 : STD_LOGIC_VECTOR(7 downto 0) := X"8C";
-CONSTANT OV7670_RGB444DATA : STD_LOGIC_VECTOR(7 downto 0) := "00000000";
-variable cnt : STD_LOGIC_VECTOR(11 downto 0) := X"000";
+CONSTANT OV7670_ADDR : std_logic_vector(6 downto 0) := "1000011";
+CONSTANT OV7670_WRITE : std_logic := '0';
+CONSTANT OV7670_DONTCARE : std_logic := '1';
+CONSTANT OV7670_REGADDRCOM7 : std_logic_vector(7 downto 0) := X"12";
+CONSTANT OV7670_COM7DATA : std_logic_vector(7 downto 0) := "00000100"; -- Enable Raw RGB Output
+CONSTANT OV7670_REGADDRCOM15 : std_logic_vector(7 downto 0) := X"40";
+CONSTANT OV7670_COM15DATA : std_logic_vector(7 downto 0) := "00010000";
+CONSTANT OV7670_REGADDRRGB444 : std_logic_vector(7 downto 0) := X"8C";
+CONSTANT OV7670_RGB444DATA : std_logic_vector(7 downto 0) := "00000000";
+variable cnt : std_logic_vector(11 downto 0) := X"000";
 begin
    if(Clk_200K'event and Clk_200K = '1') then
       if( cnt = X"00" ) then SIOD <= '0'; cnt := cnt + X"01";
@@ -481,7 +491,7 @@ begin
       
       elsif( cnt = X"2FF" ) then
          cnt := X"2FF";
-         CE_OUT <= '1';
+         DONE_o <= '1';
       else
          cnt := cnt + X"01";
       end if;

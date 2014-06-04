@@ -6,39 +6,40 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 ---------------------------------------------------------------------------------
 entity CamCtrl is
 	port(
-	  CLK20     : in  STD_LOGIC;
-     D_BUG     : out STD_LOGIC_VECTOR(3 downto 0);
-   --CAMERA PORTS
-     VSYNC     :in STD_LOGIC;
-     HREF      :in STD_LOGIC;
-     PCLK      :in STD_LOGIC;
-     DATA      :in STD_LOGIC_VECTOR(7 downto 0);
-     SIOC      :out STD_LOGIC;
-     SIOD      :out STD_LOGIC;
-     XCLK      :out STD_LOGIC;
-	  EXPORT	   :out STD_LOGIC;
-	  Y0        :out STD_LOGIC_VECTOR(7 downto 0);
-	  Y1        :out STD_LOGIC_VECTOR(7 downto 0);
-	  CB        :out STD_LOGIC_VECTOR(7 downto 0);
-	  CR        :out STD_LOGIC_VECTOR(7 downto 0);
-     CAM_EN    :in STD_LOGIC);
-      
-      
+    CLK20     : in  STD_LOGIC;
+    D_BUG     : out STD_LOGIC_VECTOR(3 downto 0);
+    --CAMERA PORTS
+    VSYNC     :in STD_LOGIC;
+    HREF      :in STD_LOGIC;
+    PCLK      :in STD_LOGIC;
+    DATA      :in STD_LOGIC_VECTOR(7 downto 0);
+    SIOC      :out STD_LOGIC;
+    SIOD      :out STD_LOGIC;
+    XCLK      :out STD_LOGIC;
+    EXPORT	   :out STD_LOGIC;
+    Y0        :out STD_LOGIC_VECTOR(7 downto 0);
+    Y1        :out STD_LOGIC_VECTOR(7 downto 0);
+    CB        :out STD_LOGIC_VECTOR(7 downto 0);
+    CR        :out STD_LOGIC_VECTOR(7 downto 0);
+    CAM_EN    :in STD_LOGIC
+    );
 end CamCtrl;
 ---------------------------------------------------------------------------------
+-- Internal Signal Declarations
+---------------------------------------------------------------------------------
 architecture Behavioral of CamCtrl is
-	TYPE STATE_TYPE is (S0, S1, S2, S3);
+  TYPE STATE_TYPE is (S0, S1, S2, S3);
 
-   signal SampCtrl  :STD_LOGIC_VECTOR(4 downto 0);
-   signal Y0Clk     :STD_LOGIC;
-   signal CBClk     :STD_LOGIC;
-   signal Y1Clk     :STD_LOGIC;
-   signal CRClk     :STD_LOGIC;
-	signal SReg		  : STATE_TYPE := S0;
-	signal SNext	  : STATE_TYPE := S0;
+  signal SampCtrl  :STD_LOGIC_VECTOR(4 downto 0);
+  signal Y0Clk     :STD_LOGIC;
+  signal CBClk     :STD_LOGIC;
+  signal Y1Clk     :STD_LOGIC;
+  signal CRClk     :STD_LOGIC;
+  signal SReg		  : STATE_TYPE := S0;
+  signal SNext	  : STATE_TYPE := S0;
 ---------------------------------------------------------------------------------
 -- Signal Assignments
---
+---------------------------------------------------------------------------------
 begin
    SIOC <= '0';
    SIOD <= '0';
@@ -56,7 +57,7 @@ begin
    
 ---------------------------------------------------------------------------------
 -- Enable Camera
---
+---------------------------------------------------------------------------------
 process(CAM_EN, CLK20)
 begin
 if(CAM_EN = '1') then
@@ -67,7 +68,7 @@ end if;
 end process;
 --------------------------------------------------------------------------------
 -- State Machine Description
---
+---------------------------------------------------------------------------------
 process(HREF,VSYNC,PCLK,SNext,CAM_EN)
 begin
    if(HREF = '1' and VSYNC = '0')
