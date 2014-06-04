@@ -80,10 +80,10 @@ begin
     variable cnt : std_logic_vector(3 downto 0) := "0000";
   begin
     if( ARST = '1' ) then
-      cnt = X"0";
+      cnt := X"0";
       SampleCtrl <= SAMPIDLE;
       ClrPend <= '1';
-    if(CLK100'event and CLK100 = '1') then
+    elsif(CLK100'event and CLK100 = '1') then
       if(cnt = X"0" and WPend = '1') then
         cnt := cnt + '1';
         SampleCtrl <= SAMP0;

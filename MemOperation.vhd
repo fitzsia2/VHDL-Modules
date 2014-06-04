@@ -61,6 +61,7 @@ architecture Behavioral of MemOperation is
   signal MemAdr_i : std_logic_vector(25 downto 0);
 
   signal Data_i : std_logic_vector(63 downto 0);
+  signal AdrWrite_i : std_logic_vector(25 downto 0);
   signal AdrRead_i : std_logic_vector(25 downto 0);
   signal WPendRst : std_logic := '0';
   signal WrtePend : std_logic := '0';

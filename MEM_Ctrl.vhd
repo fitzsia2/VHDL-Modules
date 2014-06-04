@@ -69,7 +69,7 @@ architecture Structure of MEM_Ctrl is
     port(
           CLK_IN : in std_logic;
           ARST   : in std_logic;
-          DONE_out : out std_logic
+          OUT_EN : out std_logic
         );
   end component;
 
@@ -96,8 +96,9 @@ architecture Structure of MEM_Ctrl is
           CE : in std_logic;
           WCLK : in std_logic;
           WADR_RST : in std_logic;
-          ADR_in : in std_logic(25 downto 0);
+          ADR_in : in std_logic_vector(25 downto 0);
           D_IN : in std_logic_vector(63 downto 0);
+          DATA_ACK_out : out std_logic;
           RCLK : in std_logic;
           ADR_READ : in std_logic_vector(25 downto 0);    
           MEM_DB : inout std_logic_vector(15 downto 0);      

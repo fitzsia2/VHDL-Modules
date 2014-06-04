@@ -172,8 +172,9 @@ architecture Structure of VideoCam is
           MEM_MT_CRE : out std_logic;
           WCLK : in std_logic;
           WADR_RST : in std_logic;
-          ADR_in : in std_logic(25 downto 0);
+          ADR_in : in std_logic_vector(25 downto 0);
           D_IN : in std_logic_vector(63 downto 0);
+          DATA_ACK_out : out std_logic;
           RCLK : in std_logic;
           ADR_READ : in std_logic_vector(25 downto 0);    
           MEM_DB : inout std_logic_vector(15 downto 0);      
@@ -310,7 +311,7 @@ Begin
 
   U3: DataHold_V2
   port map(
-            ARST => ,
+            ARST => DataHold1_Ack,
             CLK100 => CLK100,
             CLK_IN => CamCtrl_ClkOut_i,
             D0 => CamCtrl_D0_i,

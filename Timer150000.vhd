@@ -35,7 +35,7 @@ begin
         OUT_EN <= '0';
       else
         OUT_EN <= '1';
-      tnd if;
+      end if;
     else
       null;
     end if;

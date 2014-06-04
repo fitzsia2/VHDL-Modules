@@ -108,7 +108,7 @@ begin
         cnt := cnt + '1';
       else
         cnt := "000";
-        Clk_div_5 <= not CLK_1_i;
+        Clk_div_5 <= not Clk_div_5;
       end if;
     else
       null;
