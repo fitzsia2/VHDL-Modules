@@ -4,61 +4,62 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 ---------------------------------------------------------------------------------
-entity MemOperation is
-	port(
-		CLK_IN      : in  STD_LOGIC;
-      CE          : in STD_LOGIC;
-      WCLK        : in STD_LOGIC;
-      WADR_RST    : in STD_LOGIC;
-      D_IN        : in STD_LOGIC_VECTOR(63 downto 0);
-      RCLK        : in STD_LOGIC;
-      ADR_READ    : in STD_LOGIC_VECTOR(26 downto 1);
-      D_OUT       : out STD_LOGIC_VECTOR(15 downto 0);
-      RCLK_OUT    : OUT STD_LOGIC;
-      D_BUG       : out STD_LOGIC_VECTOR(3 downto 0);
-      
-   -- CELLULAR MEMORY PORTS
-		PCM_CS_L    : out STD_LOGIC := '1'; --Disable PCM Device
-		MEM_CS_L    : out STD_LOGIC;	-- Cellular RAM Chip Select
-      MEM_OE_L    : out STD_LOGIC;  -- Cellular Ram Output EN
-		MEM_WR_L    : out STD_LOGIC;	-- Cellular Write EN
-		MEM_ADV_L   : out STD_LOGIC;	-- Mem Address Valid Pin
-   	MEM_CLK_L   : out STD_LOGIC;	-- Mem CLK
-      MEM_UB_L    : out STD_LOGIC; 
-      MEM_LB_L    : out STD_LOGIC;
-		MEM_ADR     : out STD_LOGIC_VECTOR(26 downto 1);
-		MEM_DB      : inout STD_LOGIC_VECTOR(15 downto 0));
+entity MemOperation is port(
+    CLK_IN      : in  STD_LOGIC;
+    CE          : in STD_LOGIC;
+    WCLK        : in STD_LOGIC;
+    WADR_RST    : in STD_LOGIC;
+    D_IN        : in STD_LOGIC_VECTOR(63 downto 0);
+    RCLK        : in STD_LOGIC;
+    ADR_READ    : in STD_LOGIC_VECTOR(26 downto 1);
+    D_OUT       : out STD_LOGIC_VECTOR(15 downto 0);
+    RCLK_OUT    : OUT STD_LOGIC;
+    D_BUG       : out STD_LOGIC_VECTOR(3 downto 0);
+          
+       -- CELLULAR MEMORY PORTS
+    PCM_CS_L    : out STD_LOGIC := '1'; --Disable PCM Device
+    MEM_CS_L    : out STD_LOGIC;    -- Cellular RAM Chip Select
+    MEM_OE_L    : out STD_LOGIC;  -- Cellular Ram Output EN
+    MEM_WR_L    : out STD_LOGIC;    -- Cellular Write EN
+    MEM_ADV_L   : out STD_LOGIC;    -- Mem Address Valid Pin
+    MEM_CLK_L   : out STD_LOGIC;    -- Mem CLK
+    MEM_UB_L    : out STD_LOGIC; 
+    MEM_LB_L    : out STD_LOGIC;
+    MEM_ADR     : out STD_LOGIC_VECTOR(26 downto 1);
+    MEM_DB      : inout STD_LOGIC_VECTOR(15 downto 0));
 end MemOperation;
 ---------------------------------------------------------------------------------
+-- Internal Signal Declaration
+---------------------------------------------------------------------------------
 architecture Behavioral of MemOperation is
-	TYPE STATE_TYPE is (S_READ0, S_READ1, S_READ2, S_READ3, S_READ4,
-                       S_READ5, S_READ6, S_READ7, S_READ8, S_READ9,
-                       S_READ10, S_READ11, S_READ12, S_READ13, S_READ14,
-                       S_READ15,
-                       S_WRITE0, S_WRITE1, S_WRITE2, S_WRITE3, S_WRITE4,
-                       S_WRITE5, S_WRITE6, S_WRITE7, S_WRITE8, S_WRITE9,
-                       S_WRITE10, S_WRITE11, S_WRITE12, S_WRITE13, S_WRITE14,
-                       S_WRITE15,
-                       S_IDLE);
+    TYPE STATE_TYPE is( S_READ0, S_READ1, S_READ2, S_READ3, S_READ4,
+                        S_READ5, S_READ6, S_READ7, S_READ8, S_READ9,
+                        S_READ10, S_READ11, S_READ12, S_READ13, S_READ14,
+                        S_READ15,
+                        S_WRITE0, S_WRITE1, S_WRITE2, S_WRITE3, S_WRITE4,
+                        S_WRITE5, S_WRITE6, S_WRITE7, S_WRITE8, S_WRITE9,
+                        S_WRITE10, S_WRITE11, S_WRITE12, S_WRITE13, S_WRITE14,
+                        S_WRITE15,
+                        S_IDLE);
 
-   signal MemCtrl      : STD_LOGIC_VECTOR(8 downto 0);
-	signal MemOutEN_i	  : STD_LOGIC;
-	signal MemWrEN_i    : STD_LOGIC;
-	signal MemChipEN_i  : STD_LOGIC;
-   signal MemUBEN_i    : STD_LOGIC;
-	signal MemLBEN_i    : STD_LOGIC;
-   signal MemAdr_i     : STD_LOGIC_VECTOR(26 downto 1);
-   
-   signal Data_i       : STD_LOGIC_VECTOR(63 downto 0);
-   signal AdrRead_i    : STD_LOGIC_VECTOR(26 downto 1);
-   signal WPendRst     : STD_LOGIC := '0';
-   signal WrtePend     : STD_LOGIC := '0';
-   
-   signal RPendRst     : STD_LOGIC;
-   signal ReadPend     : STD_LOGIC;
-	
-	signal SReg			  : STATE_TYPE := S_IDLE;
-	signal SNext		  : STATE_TYPE := S_IDLE;
+    signal MemCtrl      : STD_LOGIC_VECTOR(8 downto 0);
+    signal MemOutEN_i   : STD_LOGIC;
+    signal MemWrEN_i    : STD_LOGIC;
+    signal MemChipEN_i  : STD_LOGIC;
+    signal MemUBEN_i    : STD_LOGIC;
+    signal MemLBEN_i    : STD_LOGIC;
+    signal MemAdr_i     : STD_LOGIC_VECTOR(26 downto 1);
+
+    signal Data_i       : STD_LOGIC_VECTOR(63 downto 0);
+    signal AdrRead_i    : STD_LOGIC_VECTOR(26 downto 1);
+    signal WPendRst     : STD_LOGIC := '0';
+    signal WrtePend     : STD_LOGIC := '0';
+
+    signal RPendRst     : STD_LOGIC;
+    signal ReadPend     : STD_LOGIC;
+
+    signal SReg         : STATE_TYPE := S_IDLE;
+    signal SNext        : STATE_TYPE := S_IDLE;
 
 ---------------------------------------------------------------------------------
 -- Signal Assignments
