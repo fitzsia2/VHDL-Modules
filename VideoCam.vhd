@@ -77,6 +77,12 @@ architecture Structure of VideoCam is
   signal progen_i : std_logic := '0';
   signal rst_i : std_logic := '0';
 
+  -- PixelCounter signals
+  signal PixelCounter_Count_i : std_logic_vector( 17-1 downto 0 ); -- Same size as PixelCounter generic N
+
+  -- Cmp1 signals
+  signal Cmp1_LT_i : std_logic; -- Used for disabling camera operation
+
   -- CamCtrl To YCbCrToRGB332
   signal CamCtrl_ClkOut_i :std_logic;
   signal CamCtrl_D0_i :std_logic_vector(7 downto 0);
@@ -114,6 +120,33 @@ architecture Structure of VideoCam is
   ------------------------------------------------------------------------------
   -- Component Declarations
   ------------------------------------------------------------------------------
+  component Counter is
+    generic(
+             N : integer;
+           );
+    port(
+          CLK_in : in std_logic;
+          RST_in : in std_logic;
+          COUNT_OUT : out std_logic_vector( N-1 downto 0 )
+        );
+  end component;
+
+  component Comparator is
+    generic(
+             WIDTH_g : integer
+           );
+    port(
+          A_in : in std_logic_vector( WIDTH_g-1 downto 0);
+          B_in : in std_logic_vector( WIDTH_g-1 downto 0);
+          EQ : out std_logic;
+          NEQ : out std_logic;
+          LT : out std_logic;
+          LTE : out std_logic;
+          GT : out std_logic;
+          GTE : out std_logic
+        );
+  end component;
+
   component cam_ctrl is
     port(
           CLK_IN : in std_logic;
@@ -287,6 +320,31 @@ Begin
   ---------------------------------------------------------------------------------
   -- Connection Description
   --
+  PixelCounter: Counter
+  generic map(
+               N => 17
+             );
+  port map(
+            CLK_in => CamCtrl_ClkOut_i,
+            RST_in => open,
+            COUNT_OUT => PixelCounter_Count_i
+          );
+
+  Cmp1: Comparator
+  generic map(
+               WIDTH_g => 17
+             );
+  port map(
+            A_in => PixelCounter_Count_i,
+            B_in => CONV_STD_LOGIC_VECTOR(0, 640*480/4), -- 640*480/4 is the number of CamCtrl_ClkOut_i clock cycles per frame
+            EQ => open,
+            NEQ => open,
+            LT => Cmp1_LT_i, -- Used for disabling camera operation
+            LTE => open,
+            GT => open,
+            GTE => open
+          );
+
   U1: CAM_Ctrl
   port map(
             CLK_IN => CLK100,
@@ -297,7 +355,7 @@ Begin
             HREF => CAM_HREF,
             PCLK => CAM_PCLK,
             DATA => CAM_DATA,
-            CAM_EN => CAM_EN,
+            CAM_EN => Cmp1_LT_i,
             XCLK => CAM_XCLK,
             n_rst => open,
             PWDN => open,
