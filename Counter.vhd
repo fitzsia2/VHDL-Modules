@@ -7,7 +7,7 @@ use WORK.EthConstants.ALL;
 ---------------------------------------------------------------------------------
 entity Counter is
    generic(
-      COUNTMAX : integer
+      COUNTMAX : integer := 256
       );
    port(
       CLK_IN : in std_logic;
