@@ -37,8 +37,7 @@ entity CamOperation is
         D0 : out std_logic_vector(7 downto 0) := (others => '0');
         D1 : out std_logic_vector(7 downto 0) := (others => '0');
         D2 : out std_logic_vector(7 downto 0) := (others => '0');
-        D3 : out std_logic_vector(7 downto 0) := (others => '0');
-        CAM_EN : in std_logic
+        D3 : out std_logic_vector(7 downto 0) := (others => '0')
       );
 
 end CamOperation;
@@ -81,6 +80,7 @@ begin
   process(CE, CLK100M_IN)
     variable cnt : std_logic_vector(1 downto 0) := ( others => '0' );
   begin
+    --assert CE = '0' report "Camera diabled" severity warning;
     if(CE = '0') then
       XClk_i <= '1';
     elsif(CLK100M_IN'event and CLK100M_IN = '1') then

@@ -17,13 +17,13 @@ entity CAM_Ctrl is
   port(
         CLK_IN : in std_logic;
         CLK24M_IN : in std_logic;
+        CAM_EN : in std_logic;
         SIOC : out std_logic;
         SIOD : out std_logic;
         VSYNC : in std_logic;
         HREF : in std_logic;
         PCLK : in std_logic;
         DATA : in std_logic_vector(7 downto 0);
-        CAM_EN : in std_logic;          
         D_BUG : out std_logic_vector(3 downto 0);
         XCLK : out std_logic;
         n_rst : out std_logic;
@@ -39,6 +39,7 @@ end CAM_Ctrl;
 --------------------------------------------------------------------------------
 architecture Structure of CAM_Ctrl is
   signal InitEnable_i : std_logic;
+  signal CameraInitialized_i : std_logic;
   signal OpEnable_i : std_logic;
 
 --------------------------------------------------------------------------------
@@ -72,7 +73,6 @@ architecture Structure of CAM_Ctrl is
           HREF : in std_logic;
           PCLK : in std_logic;
           DATA : in std_logic_vector(7 downto 0);
-          CAM_EN : in std_logic;          
           D_BUG : out std_logic_vector(3 downto 0);
           XCLK : out std_logic;
           n_rst : out std_logic;
@@ -88,6 +88,7 @@ architecture Structure of CAM_Ctrl is
 -- Internal Signal Assignments
 --------------------------------------------------------------------------------
 begin
+   OpEnable_i <= '1' when CAM_EN = '1' and CameraInitialized_i = '1' else '0';
 
 --------------------------------------------------------------------------------
 -- Internal Hardware Assignments
@@ -105,7 +106,7 @@ begin
             CE => InitEnable_i,
             SIOC => SIOC,
             SIOD => SIOD,
-            DONE_o => OpEnable_i,
+            DONE_o => CameraInitialized_i,
             D_BUG => open
           );
 
@@ -126,7 +127,6 @@ begin
             D1 => D1,
             D2 => D2,
             D3 => D3,
-            CAM_EN => CAM_EN,
             D_BUG => D_BUG
           );
 

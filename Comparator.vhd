@@ -41,6 +41,7 @@ begin
   LTE <= '1' when ( A_in <= B_in ) else '0';
   GT  <= '1' when ( A_in > B_in )  else '0';
   GTE <= '1' when ( A_in >= B_in ) else '0';
+  --assert (A_in < B_in) report "A_in > B_in : " & integer'image(conv_integer(A_in)) & "  " & integer'image(conv_integer(B_in)) severity warning;
 
 ---------------------------------------------------------------------------------
 end Behavioral;
