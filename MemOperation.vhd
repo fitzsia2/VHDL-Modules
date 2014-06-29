@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- MemOperation.vhd
 --
--- Configured for 4 words, 150ns write cycles.
+-- Configured for 4 word, 150ns burst write cycles.
 -- Memory MUST be initialized for burst read/write cycles
 --------------------------------------------------------------------------------
 library IEEE;

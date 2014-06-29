@@ -66,6 +66,11 @@ architecture Structure of VideoCam is
    ------------------------------------------------------------------------------
    -- Signal Declarations
    ------------------------------------------------------------------------------
+   constant MEMORYADDRESSBUSWIDTH : integer := 26;
+
+   ------------------------------------------------------------------------------
+   -- Signal Declarations
+   ------------------------------------------------------------------------------
    signal Clk_20_i  : std_logic;
 
    -- DCM Signals
@@ -78,7 +83,7 @@ architecture Structure of VideoCam is
    signal rst_i : std_logic := '0';
 
    -- PixelCounter signals
-   signal PixelCounter_Count_i : std_logic_vector( 17-1 downto 0 ); -- Same size as PixelCounter generic N
+   signal PixelCounter_Count_i : std_logic_vector( MEMORYADDRESSBUSWIDTH-1 downto 0 ); -- Same size as PixelCounter generic N
 
    -- Cmp1 signals
    signal Cmp1_LT_i : std_logic; -- Used for disabling camera operation
@@ -98,6 +103,12 @@ architecture Structure of VideoCam is
    signal DataHold1_Ack : std_logic;
    signal DataHold1_ClkOut : std_logic;
    signal DataHold1_DOUT_i : std_logic_vector(63 downto 0);
+   
+   -- Multiplexer to MemCtrl Address bus
+   signal MemCtrl_WrAddressIn_i : std_logic_vector( MEMORYADDRESSBUSWIDTH-1 downto 0 );
+   
+   -- Multiplexer to MemCtrl Data bus
+   signal MemCtrl_WrDataIn_i :std_logic_vector( 63 downto 0 );
 
    --MemCtrl To DataHold2
    signal MemCtrl_ClkOut_i : std_logic;
@@ -198,8 +209,8 @@ architecture Structure of VideoCam is
 
    component YcbCrToRGB332 is
       port(
-            CLK100		: in  std_logic;
-            CLK_IN      : in std_logic;
+            CLK100 : in  std_logic;
+            CLK_IN : in std_logic;
             Y0 : in std_logic_vector(7 downto 0);
             Y1 : in std_logic_vector(7 downto 0);
             CB : in std_logic_vector(7 downto 0);
@@ -207,6 +218,30 @@ architecture Structure of VideoCam is
             CLK_OUT : out std_logic;
             DATA : out std_logic_vector(15 downto 0);
             D_BUG : out std_logic_vector(3 downto 0)
+          );
+   end component;
+
+   component CamDataAddressManager is
+      generic(
+               N : integer
+             );
+      port(
+            ARST_in : in std_logic;
+            CLK_in : in std_logic; -- Used for counting
+            ADDRESS_out : out std_logic_vector( N-1 downto 0 ) := (others => '0')
+          );
+   end component;
+            
+   
+   component MuxTwoToOne is
+      generic(
+               N : integer
+             );
+      port(
+            A_in : in std_logic_vector( N-1 downto 0 );
+            B_in : in std_logic_vector( N-1 downto 0 );
+            SELECT_in : in std_logic;
+            Y_out : out std_logic_vector( N-1 downto 0 )
           );
    end component;
 
@@ -333,7 +368,7 @@ Begin
    --
    Cnt1: Counter
    generic map(
-                 N => 17
+                 N => MEMORYADDRESSBUSWIDTH
               )
    port map(
               EN_in => '1', 
@@ -344,11 +379,11 @@ Begin
 
    Cmp1: Comparator
    generic map(
-                 WIDTH_g => 17
+                 WIDTH_g => MEMORYADDRESSBUSWIDTH
               )
    port map(
               A_in => PixelCounter_Count_i,
-              B_in => CONV_STD_LOGIC_VECTOR(640*480/4, 17), -- 640*480/4 is the number of CamCtrl_ClkOut_i clock cycles per frame
+              B_in => CONV_STD_LOGIC_VECTOR(640*480/4, MEMORYADDRESSBUSWIDTH), -- 640*480/4 is the number of CamCtrl_ClkOut_i clock cycles per frame
               EQ => open,
               NEQ => open,
               LT => Cmp1_LT_i, -- Used for disabling camera operation
@@ -393,15 +428,36 @@ Begin
               D_BUG => D_BUG(7 downto 4)
            );
 
+   DataAddressManager: CamDataAddressManager
+   generic map(
+                 N => MEMORYADDRESSBUSWIDTH
+              )
+   port map(
+             ARST_in => CAM_VSYNC,
+             CLK_in => CamCtrl_ClkOut_i,
+             ADDRESS_out => MemCtrl_WrAddressIn_i
+           );
+
+   MemDataMux: MuxTwoToOne
+   generic map(
+                 N => 64
+              )
+   port map(
+              A_in => DataHold1_DOUT_i,
+              B_in => (others => '0'),
+              SELECT_in => '0',
+              Y_out => MemCtrl_WrDataIn_i
+           );
+
    U5: MEM_Ctrl 
    port map(
               CLK_IN => CLK100,
               MEM_MT_CRE => MEM_MT_CRE,
               WCLK => DataHold1_ClkOut,
-              D_IN => DataHold1_DOUT_i,
+              D_IN => MemCtrl_WrDataIn_i,
               DATA_ACK_out => DataHold1_Ack,
               WADR_RST => CAM_VSYNC,
-              ADR_in => (others => '0'),
+              ADR_in => MemCtrl_WrAddressIn_i, -- PixelCounter_Count_i 
               RCLK => VGADriver_ClkOut_i,
               ADR_READ => VGADriver_Address_i,
               RCLK_OUT => MemCtrl_ClkOut_i,
@@ -419,33 +475,33 @@ Begin
               D_BUG => open
            );
 
-   U6: DataHold
-   port map(
-              ARST_L => '1',
-              CLK100 => CLK100,
-              CLK_IN => MemCtrl_ClkOut_i,
-              D_IN => MemCtrl_DOUT_i,
-              CLK_OUT => DataHold2_ClkOut,
-              D_OUT => DataHold2_DOUT_i,
-              D_BUG => D_BUG(11 downto 8)
-           --D_BUG => open
-           );
-
-   U7: VGADriver
-   port map( 
-              CLK_100M_IN => CLK100,
-              CLK_OUT => VGADriver_ClkOut_i,
-              ADR_READ => VGADriver_Address_i,
-              CLK_IN => DataHold2_ClkOut,
-              D_IN => DataHold2_DOUT_i,
-              RED_OUT => RED_OUT,
-              GREEN_OUT => GREEN_OUT,
-              BLUE_OUT => BLUE_OUT,
-              HS_OUT => HS_OUT,
-              VS_OUT => VS_OUT,
-              VGA_EN => VGA_EN,
-              D_BUG => D_BUG(15 downto 12)
-           );
+--   U6: DataHold
+--   port map(
+--              ARST_L => '1',
+--              CLK100 => CLK100,
+--              CLK_IN => MemCtrl_ClkOut_i,
+--              D_IN => MemCtrl_DOUT_i,
+--              CLK_OUT => DataHold2_ClkOut,
+--              D_OUT => DataHold2_DOUT_i,
+--              D_BUG => D_BUG(11 downto 8)
+--           --D_BUG => open
+--           );
+--
+--   U7: VGADriver
+--   port map( 
+--              CLK_100M_IN => CLK100,
+--              CLK_OUT => VGADriver_ClkOut_i,
+--              ADR_READ => VGADriver_Address_i,
+--              CLK_IN => DataHold2_ClkOut,
+--              D_IN => DataHold2_DOUT_i,
+--              RED_OUT => RED_OUT,
+--              GREEN_OUT => GREEN_OUT,
+--              BLUE_OUT => BLUE_OUT,
+--              HS_OUT => HS_OUT,
+--              VS_OUT => VS_OUT,
+--              VGA_EN => VGA_EN,
+--              D_BUG => D_BUG(15 downto 12)
+--           );
 
    U8: MAC_Ctrl
    port map(

@@ -159,7 +159,7 @@ begin
             CLK_IN => CLK_IN,
             WCLK => WCLK,
             WADR_RST => WADR_RST,
-            ADR_in => (others => '0'),
+            ADR_in => ADR_in,
             D_IN => D_IN,
             DATA_ACK_out => open,
             RCLK => RCLK,
