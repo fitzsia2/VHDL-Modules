@@ -31,6 +31,7 @@ architecture Behavioral of CamDataAddressManager is
    signal DataAddressCounter_i : std_logic_vector( MAXCOUNTSIZE-1 downto 0 );
    signal ResetCounter_i : std_logic := '0';
    signal AddressOut_i : std_logic_vector( N*2-1 downto 0 );
+   signal Cnt1_Rst_in_i : std_logic := '0';
 
 --------------------------------------------------------------------------------
 -- Hardware Components
@@ -79,6 +80,7 @@ architecture Behavioral of CamDataAddressManager is
 --
 begin
    ADDRESS_out <= AddressOut_i( N-1 downto 0 );
+   Cnt1_Rst_in_i <= ResetCounter_i or ARST_in;
 
 --------------------------------------------------------------------------------
 -- Connection Description
@@ -90,7 +92,7 @@ begin
    port map(
               EN_in => '1', 
               CLK_in => CLK_in,
-              RST_in => ResetCounter_i or ARST_in,
+              RST_in => Cnt1_Rst_in_i,
               COUNT_OUT => DataAddressCounter_i
            );
 

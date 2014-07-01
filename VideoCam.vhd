@@ -373,7 +373,7 @@ Begin
    port map(
               EN_in => '1', 
               CLK_in => CamCtrl_ClkOut_i,
-              RST_in => '0',
+              RST_in => CAM_VSYNC, -- Testing::Ensuring that we're still receiving frames
               COUNT_OUT => PixelCounter_Count_i
            );
 
