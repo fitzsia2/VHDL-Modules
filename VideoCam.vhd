@@ -87,6 +87,7 @@ architecture Structure of VideoCam is
 
    -- Cmp1 signals
    signal Cmp1_LT_i : std_logic; -- Used for disabling camera operation
+   signal Cmp1_GT_i : std_logic;
 
    -- CamCtrl To YCbCrToRGB332
    signal CamCtrl_ClkOut_i : std_logic;
@@ -303,6 +304,7 @@ architecture Structure of VideoCam is
 
    component mac_ctrl
       port(
+            EN_in : in std_logic;
             CLK100 : in std_logic;
             ETH_CRS : inout std_logic;
             ETH_TXCLK : in std_logic;          
@@ -373,7 +375,7 @@ Begin
    port map(
               EN_in => '1', 
               CLK_in => CamCtrl_ClkOut_i,
-              RST_in => CAM_VSYNC, -- Testing::Ensuring that we're still receiving frames
+              RST_in => '0', -- Set to CAM_VSYNC to enable constant operation of camera
               COUNT_OUT => PixelCounter_Count_i
            );
 
@@ -386,10 +388,10 @@ Begin
               B_in => CONV_STD_LOGIC_VECTOR(640*480/4, MEMORYADDRESSBUSWIDTH), -- 640*480/4 is the number of CamCtrl_ClkOut_i clock cycles per frame
               EQ => open,
               NEQ => open,
-              LT => Cmp1_LT_i, -- Used for disabling camera operation
+              LT => Cmp1_LT_i, -- Used to disable camera operation
               LTE => open,
               GT => open,
-              GTE => open
+              GTE => Cmp1_GT_i -- Used to enable MAC_Ctrl
            );
 
    CameraInterface: CAM_Ctrl
@@ -505,6 +507,7 @@ Begin
 
    U8: MAC_Ctrl
    port map(
+              EN_in => Cmp1_GT_i,
               CLK100 => CLK100,
               ETH_RSTN_L => Eth_Rst_L_i,
               ETH_CRS => Eth_Crs_i,

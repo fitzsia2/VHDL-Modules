@@ -1,94 +1,108 @@
 ---------------------------------------------------------------------------------
 library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+use IEEE.std_logic_1164.all;
+use IEEE.std_logic_ARITH.all;
+use IEEE.std_logic_UNSIGNED.all;
 Library UNISIM;
 use UNISIM.vcomponents.all;
 ---------------------------------------------------------------------------------
 entity MAC_Ctrl is
-   port ( CLK100 : in STD_LOGIC;
-          ETH_CRS           : inout STD_LOGIC;
-          ETH_RSTN_L        : out STD_LOGIC := '0';
-          ETH_MODE0_RXD0    : out STD_LOGIC := '0';
-          ETH_MODE1_RXD1    : out STD_LOGIC := '1';
-          ETH_MODE2_COL     : out STD_LOGIC := '0';
-          ETH_TXD           : out STD_LOGIC_VECTOR(3 downto 0);
-          ETH_TXEN          : out STD_LOGIC;
-          ETH_TXCLK         : in STD_LOGIC;
---          ETH_TXDATA_IN     : in STD_LOGIC_VECTOR(3 downto 0);
-          ETH_INT_L_TXER_TX4: out STD_LOGIC;
-          ETH_AD0_RXER_RXD4 : out STD_LOGIC := '1';
-          ETH_AD1_RXCLK     : out STD_LOGIC := '0';
-          ETH_AD2_RXD3      : out STD_LOGIC := '0';
-          ETH_RMIISEL_RXD2  : out STD_LOGIC := '0';
---          ETH_MDC           : out STD_LOGIC; -- Not used in design
---          ETH_MDIO          : out STD_LOGIC; -- Not used in design
---          ETH_TXER          : out STD_LOGIC; -- Not used in design
-          D_BUG             : out STD_LOGIC_VECTOR(3 downto 0));
+   port(
+          EN_in : in std_logic;
+          CLK100 : in std_logic;
+          ETH_CRS : inout std_logic;
+          ETH_RSTN_L : out std_logic := '0';
+          ETH_MODE0_RXD0 : out std_logic := '0';
+          ETH_MODE1_RXD1 : out std_logic := '1';
+          ETH_MODE2_COL : out std_logic := '0';
+          ETH_TXD : out std_logic_vector(3 downto 0);
+          ETH_TXEN : out std_logic;
+          ETH_TXCLK : in std_logic;
+--          ETH_TXDATA_IN : in std_logic_vector(3 downto 0);
+          ETH_INT_L_TXER_TX4 : out std_logic;
+          ETH_AD0_RXER_RXD4 : out std_logic := '1';
+          ETH_AD1_RXCLK : out std_logic := '0';
+          ETH_AD2_RXD3 : out std_logic := '0';
+          ETH_RMIISEL_RXD2 : out std_logic := '0';
+--          ETH_MDC : out std_logic; -- Not used in design
+--          ETH_MDIO : out std_logic; -- Not used in design
+--          ETH_TXER : out std_logic; -- Not used in design
+          D_BUG : out std_logic_vector(3 downto 0)
+       );
 end MAC_Ctrl;
 ---------------------------------------------------------------------------------
 architecture Structure of MAC_Ctrl is
-   signal EnableConfig_i : STD_LOGIC := '0';
-   signal EnableOperation_i : STD_LOGIC := '0';
-   signal Cfg_Int_L_TxEr_Tx4_i : STD_LOGIC;
-   signal Op_Int_L_TxEr_Tx4_i : STD_LOGIC;
+   signal EnableConfig_i : std_logic := '0';
+   signal InitComplete_i : std_logic;
+   signal EnableOperation_i : std_logic := '0';
+   signal Cfg_Int_L_TxEr_Tx4_i : std_logic;
+   signal Op_Int_L_TxEr_Tx4_i : std_logic;
    
    -- DCM_SP
-   signal Clk100_90Degrees_i : STD_LOGIC;
-   signal ClkFB_i : STD_LOGIC;
+   signal Clk100_90Degrees_i : std_logic;
+   signal ClkFB_i : std_logic;
    
    -- CRC signals
-   signal Crc_Rst_i : STD_LOGIC;
-   signal Crc_Data_i : STD_LOGIC_VECTOR(7 downto 0);
-   signal Crc_Init_i : STD_LOGIC;
-   signal Crc_Data_Valid_i : STD_LOGIC;
+   signal Crc_Rst_i : std_logic;
+   signal Crc_Data_i : std_logic_vector(7 downto 0);
+   signal Crc_Init_i : std_logic;
+   signal Crc_Data_Valid_i : std_logic;
 
 ---------------------------------------------------------------------------------
    
    component Timer10K is port(
-      EN : in STD_LOGIC;
-      CLK_IN : in STD_LOGIC;
-      OUT_EN : out STD_LOGIC);
+      EN : in std_logic;
+      CLK_IN : in std_logic;
+      OUT_EN : out std_logic);
    end component;
    
    component ConfigStraps is port(
-      CE_L  : in STD_LOGIC;
-      MODE  : out STD_LOGIC_VECTOR(2 downto 0);
-      PHYAD : out STD_LOGIC_VECTOR(2 downto 0);
-      INT_L : out STD_LOGIC;
-      RMIISEL : out STD_LOGIC);
+      CE_L  : in std_logic;
+      MODE  : out std_logic_vector(2 downto 0);
+      PHYAD : out std_logic_vector(2 downto 0);
+      INT_L : out std_logic;
+      RMIISEL : out std_logic);
    end component;
 
    component EthOperation is port(
-      CE : in STD_LOGIC;
-      CLK100 : in STD_LOGIC;
---      TX_DATA_IN : in STD_LOGIC_VECTOR(3 downto 0);
-      TXD : out STD_LOGIC_VECTOR(3 downto 0);
-      TXEN : out STD_LOGIC;
-      TXCLK : in STD_LOGIC;
-      TXER_TX4 : out STD_LOGIC;
-      D_BUG : out STD_LOGIC_VECTOR(3 downto 0);
-      COL : out STD_LOGIC);
+      CE : in std_logic;
+      CLK100 : in std_logic;
+--      TX_DATA_IN : in std_logic_vector(3 downto 0);
+      TXD : out std_logic_vector(3 downto 0);
+      TXEN : out std_logic;
+      TXCLK : in std_logic;
+      TXER_TX4 : out std_logic;
+      D_BUG : out std_logic_vector(3 downto 0);
+      COL : out std_logic);
    end component;
    
-   COMPONENT CRC
-   PORT(
-      CLOCK : IN std_logic;
-      RESET : IN std_logic;
-      DATA : IN std_logic_vector(7 downto 0);
-      LOAD_INIT : IN std_logic;
-      CALC : IN std_logic;
-      D_VALID : IN std_logic;          
+   component CRC
+   port(
+      CLOCK : in std_logic;
+      RESET : in std_logic;
+      DATA : in std_logic_vector(7 downto 0);
+      LOAD_INIT : in std_logic;
+      CALC : in std_logic;
+      D_VALID : in std_logic;          
       CRC : OUT std_logic_vector(7 downto 0);
       CRC_REG : OUT std_logic_vector(31 downto 0);
       CRC_VALID : OUT std_logic
       );
-   END COMPONENT;
+   end component;
+
+   component DataFF is
+      port(
+            CLK_in : in std_logic;
+            DATA_in : in std_logic;
+            n_SRST_in : in std_logic;
+            Q_out : out std_logic;
+            n_Q_out : out std_logic
+          );
+   end component;
    
 --   COMPONENT EthernetFrameBuilder
 --   PORT(
---      CLOCK : IN std_logic;
+--      CLOCK : in std_logic;
 --      RESET_OUT : OUT std_logic;
 --      DATA_OUT : OUT std_logic_vector(7 downto 0);
 --      INIT_CRC : OUT std_logic;
@@ -101,8 +115,9 @@ architecture Structure of MAC_Ctrl is
 ---------------------------------------------------------------------------------
 -- Signal Assignment
 begin
-   ETH_INT_L_TXER_TX4 <= Cfg_Int_L_TxEr_Tx4_i WHEN (EnableOperation_i = '0') ELSE Op_Int_L_TxEr_Tx4_i;
+   ETH_INT_L_TXER_TX4 <= Cfg_Int_L_TxEr_Tx4_i when (EnableOperation_i = '0') else Op_Int_L_TxEr_Tx4_i;
    ETH_RSTN_L <= EnableConfig_i ;
+   EnableOperation_i <= InitComplete_i and EN_in;
    ETH_CRS <= 'Z';
                                      
 ---------------------------------------------------------------------------------
@@ -153,18 +168,23 @@ begin
       RST => '0'                     -- 1-bit input: Active high reset input
    ); -- End of DCM_SP_inst instantiation
 
-   U1: Timer10K port map(
+   U1: Timer10K
+   port map(
       EN => '1',
       CLK_IN => CLK100,
-      OUT_EN => EnableConfig_i);
+      OUT_EN => EnableConfig_i
+   );
       
-   U2: Timer10K port map(
+   U2: Timer10K
+   port map(
       EN => EnableConfig_i,
       CLK_IN => CLK100,
-      OUT_EN => EnableOperation_i);
+      OUT_EN => InitComplete_i
+   );
 
-   U3: ConfigStraps port map(
-      CE_L => EnableOperation_i,
+   U3: ConfigStraps
+   port map(
+      CE_L => InitComplete_i,
       MODE(0) => ETH_MODE0_RXD0,
       MODE(1) => ETH_MODE1_RXD1,
       MODE(2) => ETH_MODE2_COL,
@@ -172,9 +192,11 @@ begin
       PHYAD(1) => ETH_AD1_RXCLK,
       PHYAD(2) => ETH_AD2_RXD3,
       INT_L => Cfg_Int_L_TxEr_Tx4_i,
-      RMIISEL => ETH_RMIISEL_RXD2);
+      RMIISEL => ETH_RMIISEL_RXD2
+   );
       
-   U4: EthOperation port map(
+   U4: EthOperation
+   port map(
       CE => EnableOperation_i,
       CLK100 => CLK100,
       TXD(3 downto 0) => ETH_TXD,
@@ -194,16 +216,17 @@ begin
 --      D_VALID_OUT => Crc_Data_Valid_i
 --   );
       
-   CRC_Generator: CRC PORT MAP(
+   CRC_Generator: CRC
+   port map(
       CLOCK => CLK100,
       RESET => '1',
       DATA => X"00",
       LOAD_INIT => '0',
       CALC => '0',
       D_VALID => '0',
-      CRC => OPEN,
-      CRC_REG => OPEN,
-      CRC_VALID => OPEN
+      CRC => open,
+      CRC_REG => open,
+      CRC_VALID => open
    );
 
 ---------------------------------------------------------------------------------
